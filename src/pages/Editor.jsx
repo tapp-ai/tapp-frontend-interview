@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 import { theme } from "../styles/theme";
 import Sidebar from "../components/editor/Sidebar";
 import Site from "../components/editor/Site";
+import { useEffect, useState } from "react";
+import { siteThemes } from "../constants/siteThemes";
+
 
 // Component Styles
 
@@ -15,6 +18,7 @@ const Root = styled.div`
   padding: 0;
   overflow-x: hidden;
   overflow-y: hidden;
+  
 `;
 
 const RootContent = styled.div`
@@ -23,6 +27,7 @@ const RootContent = styled.div`
   display: flex;
   transition: height 100ms linear;
   padding: 32px;
+  
 `;
 
 const SiteWrapper = styled(motion.div)`
@@ -32,7 +37,7 @@ const SiteWrapper = styled(motion.div)`
   overflow: hidden;
   border: 1px solid ${theme.colors.black[40]};
   border-radius: 8px;
-  background-color: ${theme.colors.black[10]}; // Change to Primary color
+  background-color: ${({ mainTheme, themeStyles }) => themeStyles[mainTheme].primary}; // Change to Primary color
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,14 +50,34 @@ const SideBarWrapper = styled(motion.div)`
 
 /** Root Editor View */
 function Editor() {
+
+  // Creating a new state theme and initializing according to selection of theme or chosen default.
+
+  const [themes, setThemes] = useState(() => {
+    const storedTheme = localStorage.getItem("selectedTheme");
+    return storedTheme ? JSON.parse(storedTheme) : "default";
+  });
+
+  //useEffect functionality is used to set the selected theme to local storage
+  useEffect(() => {
+    localStorage.setItem("selectedTheme", JSON.stringify(themes));
+  }, [themes]);
+
+  // handleThemeChange function is used to set the theme according to user preference
+
+  const handleThemeChange = (data) => {
+    setThemes(data);
+  };
+
+
   return (
     <Root>
       <RootContent>
-        <SiteWrapper layout>
-          <Site />
+        <SiteWrapper mainTheme={themes} themeStyles={siteThemes} layout>
+          <Site chosenTheme={themes} themeStyles={siteThemes} />
         </SiteWrapper>
         <SideBarWrapper layout>
-          <Sidebar />
+          <Sidebar themesData={themes} themeStyles={siteThemes} onChangeTheme={handleThemeChange} />
         </SideBarWrapper>
       </RootContent>
     </Root>
